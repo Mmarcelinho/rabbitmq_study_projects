@@ -1,18 +1,18 @@
-## Uso de **BasicQos** (Prefetch) e Balanceamento de Mensagens no RabbitMQ
+# Uso de **BasicQos** (Prefetch) e Balanceamento de Mensagens
 
-### 1. Contexto
+## Contexto
 
 Quando há múltiplos consumidores conectados a uma mesma fila, ou mesmo **um** consumidor que processa as mensagens manualmente (via _manual ACK_), precisamos regular quantas mensagens o RabbitMQ deve enviar por vez para cada canal/consumidor. Essa configuração se dá por meio do **`BasicQos`** e **prefetchCount**.
 
 Por padrão (se não configurarmos o prefetch), o RabbitMQ pode entregar _muitas_ mensagens de uma só vez ao consumidor, especialmente se houver um grande volume de mensagens acumuladas. Isso pode resultar em um **desbalanceamento** indesejado: o primeiro consumidor a se conectar pode receber praticamente todas as mensagens pendentes, deixando os demais consumidores ociosos.
 
-### 2. Resumo do Problema
+## Resumo do Problema
 
 - **Sem `BasicQos`**: o primeiro consumidor que se conecta pode “puxar” quase todas as mensagens da fila, processando-as sozinho. Só depois que ele termina (ou enche seu buffer) o RabbitMQ passa a enviar mensagens aos outros consumidores.
     
 - **Consequência**: se o consumidor cair durante o processamento sem ter confirmado (ACK) as mensagens, muitas mensagens voltam para a fila de uma só vez, atrasando o processamento. Além disso, o balanceamento de carga fica ineficiente, pois um consumidor pode ficar sobrecarregado e os outros subutilizados.
 
-### 3. `BasicQosAsync` e Parâmetros
+## `BasicQosAsync` e Parâmetros
 
 No código abaixo, configuramos o `prefetchCount: 1` por canal para forçar o RabbitMQ a entregar **apenas uma mensagem por vez** antes de exigir um _ACK_ (confirmação). Isso garante um round-robin efetivo e evita que um consumidor acumule um grande lote de mensagens pendentes.
 
@@ -100,7 +100,7 @@ public static class Program
 }
 ```
 
-### 4. Parâmetros do `BasicQosAsync`
+## Parâmetros do `BasicQosAsync`
 
 - **`prefetchSize`**: (normalmente 0) – tamanho máximo em bytes que o consumidor pode receber sem confirmar. O RabbitMQ .NET Client atual ignora esse campo, então sempre deixe 0.
     
@@ -108,7 +108,7 @@ public static class Program
     
 - **`global`**: se `false`, a configuração se aplica por **consumidor**; se `true`, se aplica por canal como um todo.
 
-### 5. Variações
+## Variações
 
 1. **`prefetchCount = 1`**: Força round-robin estrito (cada consumidor processa uma mensagem de cada vez).
     
@@ -116,7 +116,7 @@ public static class Program
     
 3. **Combinação com `global = true`**: Aplica as regras de prefetch ao canal inteiro; pode ser útil quando há vários consumidores no mesmo canal, mas normalmente `false` é mais flexível (configuração por consumidor).
 
-### 6. Reflexões e Boas Práticas
+## Reflexões e Boas Práticas
 
 - **Equilíbrio**: usar `prefetchCount = 1` garante o balanceamento, mas pode reduzir throughput se seu processamento for rápido. Ajuste esse valor de acordo com a taxa de mensagens e tempo de processamento de cada _worker_.
     
@@ -126,6 +126,6 @@ public static class Program
     
 - **Situação com Mensagens em Lote**: se o consumidor precisar de eficiência em _batch_, pode ser útil aumentar o `prefetchCount` para processar várias mensagens de uma vez, desde que gerencie corretamente o ACK.
 
-### 7. Conclusão
+## Conclusão
 
 O uso do **`BasicQos`** e do **prefetchCount** faz toda a diferença para um sistema com múltiplos consumidores (ou mesmo um consumidor que precisa evitar “puxar” todas as mensagens de uma só vez). A chave é encontrar o ponto de equilíbrio entre **distribuição eficaz** das mensagens e **alto desempenho**.

@@ -1,4 +1,4 @@
-### 1. Conceitos Fundamentais
+# Conceitos Fundamentais
 
 - **Conexão (Connection)**: Uma sessão TCP aberta com o broker RabbitMQ.
     
@@ -12,7 +12,8 @@
 
 ---
 
-### 2. Ilustrações 
+
+## Ilustrações 
 
 ![alt text](Files/rbmq1.png)
 
@@ -44,7 +45,7 @@ Arquitetura onde temos **duas conexões** (uma para produtores, outra para consu
 
 ---
 
-### 3. Transcrição Simplificada do Conceito
+## Transcrição Simplificada do Conceito
 
 Trechos-chave do que foi discutido:
 
@@ -57,7 +58,7 @@ Trechos-chave do que foi discutido:
 
 ---
 
-### 4. Exemplo de Código: Consumidor
+## Consumidor
 
 Abaixo, vemos um código que cria **2 canais** (loop `for k`) a partir de uma única conexão e, dentro de cada canal, inicia **7 consumidores** (loop `for j`). Assim, temos um total de **14 consumidores** lendo da mesma fila `"order"`.
 
@@ -142,7 +143,7 @@ public static class Program
 
 ---
 
-### 5. Exemplo de Código: Produtor
+## Produtor
 
 Aqui, abrimos **uma única conexão** e **dois canais** para publicar mensagens. Cada canal corresponde a um “Produtor” diferente, mas **na mesma fila** `"order"`.
 
@@ -223,7 +224,7 @@ public static class Program
 
 ---
 
-### 6. Observações Gerais
+## Observações Gerais
 
 1. **Balanceamento**: O RabbitMQ faz round-robin entre consumidores pendurados na **mesma** fila.
     
@@ -241,6 +242,6 @@ public static class Program
 
 ---
 
-### 7. Conclusão
+## Conclusão
 
 Podemos escalar facilmente a quantidade de produtores (aumentando a taxa de publicação) e consumidores (ampliando a capacidade de processamento), aproveitando as características de **multiplicidade** do RabbitMQ. 

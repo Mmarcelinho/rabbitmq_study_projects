@@ -1,4 +1,4 @@
-### 1. Visão Geral
+# Visão Geral
 
 Neste cenário, vamos:
 
@@ -12,7 +12,7 @@ Para tornarmos o sistema mais robusto, abordaremos **conceitos de durabilidade**
 
 ---
 
-### 2. Subindo o RabbitMQ via Docker
+## Subindo o RabbitMQ via Docker
 
 Para rodar o RabbitMQ usando Docker, pode-se utilizar um comando semelhante ao abaixo (adapte se necessário):
 
@@ -32,15 +32,15 @@ Após executar o comando:
 
 ---
 
-### 3. Criando a API (Publicadora de Mensagens)
+## Criando a API (Publicadora de Mensagens)
 
-#### 3.1 Estrutura do Projeto
+### Estrutura do Projeto
 
 - Trata-se de uma Web API ASP.NET Core contendo um **Controller** (`OrderController`).
     
 - Ela recebe objetos do tipo `Order` via **POST**, converte em JSON e envia à fila RabbitMQ.
 
-#### 3.2 Exemplo de Código
+### Exemplo de Código
 
 ```csharp
 using System.Text;
@@ -110,7 +110,7 @@ public class OrderController : ControllerBase
 }
 ```
 
-##### Pontos de Observação
+#### Pontos de Observação
 
 - **Fila durável** (`durable: true`): assim, se o RabbitMQ for reiniciado, a definição da fila permanece.
     
@@ -120,15 +120,15 @@ public class OrderController : ControllerBase
 
 ---
 
-### 4. Criando o Worker (Consumidor de Mensagens)
+## Criando o Worker (Consumidor de Mensagens)
 
-#### 4.1 Estrutura do Projeto
+###  Estrutura do Projeto
 
 - Um projeto **Console** que se conecta ao RabbitMQ, escuta a fila `orderQueue` e processa cada mensagem.
 
 - Ao final do processamento, envia um _ack_ confirmando que a mensagem foi processada com sucesso.
 
-#### 4.2 Exemplo de Código
+### Exemplo de Código
 
 ```csharp
 using RabbitMQ.Client.Events;
@@ -212,7 +212,7 @@ public class Program
 }
 ```
 
-##### Pontos de Observação
+#### Pontos de Observação
 
 1. **Fila Durável**: mesmo se o broker reiniciar, a definição da fila permanece.
     
@@ -226,7 +226,7 @@ public class Program
 
 ---
 
-### 5. Testando o Fluxo
+## Testando o Fluxo
 
 1. **Inicie o contêiner** com o RabbitMQ (caso ainda não esteja em execução).
     
@@ -251,7 +251,7 @@ Se você iniciar **múltiplos** Workers, poderá observar como o RabbitMQ distri
 
 ---
 
-### 6. Conclusão
+## Conclusão
 
 Com poucos ajustes, é possível:
 

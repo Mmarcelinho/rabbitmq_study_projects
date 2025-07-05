@@ -1,4 +1,4 @@
-## 1. Visão Geral do RabbitMQ
+# RabbitMQ
 
 O RabbitMQ é um broker de mensagens que atua como intermediário no envio e recebimento de dados (mensagens) entre aplicações. Ele facilita a comunicação assíncrona, permitindo que uma ou mais aplicações (produtores) publiquem mensagens em filas, enquanto uma ou mais aplicações (consumidores) leem e processam essas mensagens independentemente.
 
@@ -11,11 +11,11 @@ Essa arquitetura é bastante utilizada para **desacoplar** sistemas, ou seja, pa
 
 ---
 
-## 2. Exemplo de Código em .NET (C#)
+## Exemplo de Código em .NET (C#)
 
 A seguir, apresentamos dois códigos simples em C# que demonstram o envio e recebimento de mensagens usando RabbitMQ. Um projeto funciona como **Produtor** e o outro como **Consumidor**.
 
-### 2.1 Produtor (Publisher)
+## Produtor (Publisher)
 
 ```csharp
 using RabbitMQ.Client;
@@ -68,7 +68,7 @@ public class Program
 }
 ```
 
-#### Observações Importantes
+### Observações Importantes
 
 1. **ConnectionFactory**: Centraliza as informações de conexão (host, porta, credenciais, etc.).
 2. **CreateConnectionAsync** e **CreateChannelAsync**: Abrem a conexão com o RabbitMQ e criam um canal para a comunicação.
@@ -78,7 +78,7 @@ public class Program
 
 ---
 
-### 2.2 Consumidor (Consumer)
+## Consumidor (Consumer)
 
 ```csharp
 using System.Text;
@@ -136,7 +136,7 @@ public class Program
 }
 ```
 
-#### Observações Importantes
+### Observações Importantes
 
 1. **QueueDeclareAsync**: Mais uma vez, garante que a fila exista. Embora o produtor também declare a fila, é seguro que o consumidor também a declare, pois não sabemos qual aplicação iniciará primeiro.
 2. **AsyncEventingBasicConsumer**: Consumidor que funciona de forma assíncrona. Sempre que chega uma mensagem, o evento `ReceivedAsync` é disparado.
@@ -145,7 +145,7 @@ public class Program
 
 ---
 
-## 3. Execução dos Projetos
+## Execução dos Projetos
 
 Para executar o exemplo:
 
@@ -179,7 +179,7 @@ Do outro lado:
 
 ---
 
-## 4. Pontos de Atenção e Boas Práticas
+## Pontos de Atenção e Boas Práticas
 
 1. **Durabilidade (durable)** e **Persistência**
     
@@ -202,7 +202,7 @@ Do outro lado:
 
 ---
 
-## 5. Conclusão
+## Conclusão
 
 O RabbitMQ é uma ferramenta poderosa para comunicação assíncrona e troca de mensagens entre aplicações, fornecendo desacoplamento e escalabilidade. Com poucos trechos de código em C#, é possível configurar de maneira simples o envio (Produtor) e o recebimento (Consumidor) de mensagens, garantindo maior robustez na sua arquitetura.
 

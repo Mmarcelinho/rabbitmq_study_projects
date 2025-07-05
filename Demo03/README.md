@@ -1,18 +1,18 @@
-### 1. O que é Round-Robin?
+# O que é Round-Robin?
 
 No contexto do RabbitMQ, o **Round-Robin** é um modo de distribuição de mensagens entre múltiplos consumidores. Por padrão, quando existe mais de um consumidor “inscrito” (consumindo da mesma fila), o broker distribui as mensagens em sequência para cada consumidor, de forma circular.
 
 Imagine que você possui três consumidores: **A**, **B** e **C**. A primeira mensagem vai para o consumidor **A**, a segunda para **B**, a terceira para **C**, a quarta novamente para **A**, e assim por diante, **ciclicamente**. Dessa forma, o RabbitMQ busca equilibrar a carga de mensagens entre todos os consumidores conectados.
 
-### 2. Motivação (por que usar vários consumidores?)
+##  Motivação (por que usar vários consumidores?)
 
 Ter um **Produtor** gerando muitas mensagens pode levar a um acúmulo na fila se um único **Consumidor** não processar tudo rapidamente. Para lidar com alto volume, basta **adicionar mais consumidores**. Assim, se uma fila estiver acumulando mensagens, vários processos (Workers) podem consumir simultaneamente, ganhando desempenho e escalabilidade.
 
 O round-robin é o comportamento **padrão** do RabbitMQ, portanto não é preciso nenhuma configuração especial para que a distribuição seja feita dessa maneira.
 
-### 3. Exemplo Prático com Vários Consumidores
+## Exemplo Prático com Vários Consumidores
 
-#### 3.1 Código do Produtor
+### Código do Produtor
 
 Abaixo, um exemplo de produtor em .NET/C#, que envia mensagens para a fila `order` a cada 2 segundos:
 
@@ -64,7 +64,7 @@ public class Program
 }
 ```
 
-#### 3.2 Código do Consumidor
+### Código do Consumidor
 
 Aqui, um **Consumidor** simples que se conecta à mesma fila `order`. Repare que ele está em **loop** constante, aguardando mensagens.  
 Para demonstrar o round-robin, **basta executar várias instâncias** desse mesmo Consumer em terminais/consoles diferentes:
@@ -126,7 +126,7 @@ public class Program
 }
 ```
 
-### 4. Visualizando o Comportamento Round-Robin
+## Visualizando o Comportamento Round-Robin
 
 1. **Suba o Produtor** (por exemplo, `dotnet run` no projeto _Produtor_). Ele enviará mensagens numeradas (`OrderNumber: 0`, `OrderNumber: 1`, etc.) a cada 2 segundos para a fila `order`.
     
@@ -139,11 +139,10 @@ public class Program
     - Consumidor 2: OrderNumber: 1, OrderNumber: 3, OrderNumber: 5, ...
         
     - E assim por diante, caso existam mais consumidores.
-        
 
 Se um dos consumidores for encerrado, o round-robin continuará automaticamente apenas entre os consumidores ativos.
 
-### 5. Principais Benefícios
+## Principais Benefícios
 
 - **Escalonamento Horizontal**: conforme a fila cresce, você pode subir mais instâncias de consumidores para dar conta do volume.
     
@@ -151,7 +150,7 @@ Se um dos consumidores for encerrado, o round-robin continuará automaticamente 
     
 - **Equilíbrio Automático**: o próprio RabbitMQ se encarrega de intercalar a entrega das mensagens de forma circular entre todos os consumidores disponíveis.
 
-### 6. Conclusão
+## Conclusão
 
 O round-robin é o método **padrão** do RabbitMQ para distribuir mensagens quando há vários consumidores. Basta ter mais de um processo/instância consumindo a mesma fila que o broker se encarregará de distribuir as mensagens de modo circular, sem a necessidade de qualquer configuração adicional.
 

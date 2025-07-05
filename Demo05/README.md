@@ -1,23 +1,22 @@
-## Uso de **ACK Manual** (Manual Acknowledgment) no RabbitMQ
+# Uso de **ACK Manual** (Manual Acknowledgment)
 
 Neste material, exploramos como substituir o `autoAck` pela confirmação manual de mensagens (via `BasicAckAsync` e `BasicNackAsync`) no RabbitMQ para evitar perda de mensagens e aumentar a resiliência em caso de erros.
 
 ---
 
-### 1. Cenário Apresentado
+## Cenário Apresentado
 
 Há dois projetos em C#:
 
 1. **Produtor**: envia mensagens para a fila `order`, em lotes de 100 mensagens sempre que pressionamos uma tecla.
     
 2. **Consumidor**: recebe as mensagens da fila. Em vez de usar `autoAck = true`, é possível ativar o modo manual (autoAck = false) para controlar quando a mensagem é de fato confirmada (ACK) ou descartada/reenviada (NACK).
-    
 
 A ideia é demonstrar por que o `autoAck = true` pode levar à perda de mensagens caso um _worker_ (consumidor) falhe antes de processar corretamente os dados.
 
 ---
 
-### 2. Principais Conceitos
+## Principais Conceitos
 
 1. **autoAck = true**: Assim que o broker entrega a mensagem ao consumidor, ela é marcada como concluída no servidor. Se ocorrer um erro ou crash antes da lógica de negócios terminar, a mensagem estará perdida.
     
@@ -29,9 +28,9 @@ A ideia é demonstrar por que o `autoAck = true` pode levar à perda de mensagen
 
 ---
 
-### 3. Códigos de Exemplo
+## Códigos de Exemplo
 
-#### 3.1 Consumidor (Manual ACK/NACK)
+### Consumidor (Manual ACK/NACK)
 
 ```csharp
 using System.Text;
@@ -125,7 +124,7 @@ public static class Program
 
 ---
 
-#### 3.2 Produtor (Publicando Mensagens em Lote)
+### Produtor (Publicando Mensagens em Lote)
 
 ```csharp
 using RabbitMQ.Client;
@@ -219,7 +218,7 @@ public static class Program
 
 ---
 
-### 4. Motivações para Manual ACK
+## Motivações para Manual ACK
 
 1. **Prevenção de perda de mensagens**: Se o consumidor falhar antes de terminar o processamento, o RabbitMQ notará a ausência de ACK e **recolocará** a mensagem na fila.
     
@@ -229,14 +228,12 @@ public static class Program
 
 ---
 
-### 5. Transcrição Simplificada do Assunto
-
 > _“... se você usar `autoAck = true`, assim que a mensagem é lida, o RabbitMQ a marca como concluída. Se o worker cair no meio do processo, você perde a mensagem.  
 > Com `autoAck = false`, você precisa dar `channel.BasicAckAsync()` manualmente depois de processar. Se der erro, pode chamar `BasicNackAsync()` e reencaminhar a mensagem à fila. A fila aguarda o ACK. Se o worker fechar antes de confirmar, RabbitMQ entende que não houve ACK e a mensagem volta para a fila.”_
 
 ---
 
-### 6. Conclusões
+## Conclusões
 
 1. **autoAck = false** (Manual Acknowledgment) traz maior **segurança** para suas filas.
     

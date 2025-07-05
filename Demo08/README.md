@@ -1,6 +1,6 @@
-## **Exchange Direct** no RabbitMQ
+# Exchange Direct 
 
-### 1. Cenário
+## Cenário
 
 Em tutoriais anteriores, exploramos o **Fanout Exchange** (que envia cada mensagem para **todas** as filas _bindadas_). Agora, examinamos o **Direct Exchange**, que permite encaminhar mensagens para filas específicas com base em uma **routing key** exata.
 
@@ -8,7 +8,7 @@ Isso é útil quando queremos, por exemplo, ter filas diferentes para tipos dist
 
 ---
 
-### 2. Visão Geral do Exchange Direct
+## Visão Geral do Exchange Direct
 
 O **Direct Exchange** roteará a mensagem apenas para filas cujo _binding key_ corresponda exatamente à _routing key_ fornecida ao publicar.
 
@@ -30,9 +30,9 @@ Dessa forma, as mensagens com routing key `"order_new"` são enviadas para **dua
 
 ---
 
-### 3. Código de Exemplo
+## Código de Exemplo
 
-#### 3.1 Classe de Domínio: `Order`
+### Classe de Domínio: `Order`
 
 ```csharp
 namespace Produtor;
@@ -64,7 +64,7 @@ public class Order
 
 ---
 
-#### 3.2 Produtor
+### Produtor
 
 ```csharp
 using RabbitMQ.Client;
@@ -167,7 +167,7 @@ public static class Program
 }
 ```
 
-##### Observações Principais
+#### Observações Principais
 
 - **Exchange**: criada com `ExchangeType.Direct`.
     
@@ -185,7 +185,7 @@ public static class Program
 
 ---
 
-#### 3.3 Consumidor
+### Consumidor
 
 ```csharp
 using System.Text;
@@ -261,7 +261,7 @@ public static class Program
 
 ---
 
-### 4. Funcionamento Prático
+## Funcionamento Prático
 
 1. Ao gerar um **novo** pedido (routing key = `"order_new"`), a mensagem é **entregue** às filas `"order"` e `"finance_orders"`.
     
@@ -273,7 +273,7 @@ Esse **roteamento** é feito automaticamente pelo RabbitMQ com base nos _binds_ 
 
 ---
 
-### 5. Conclusão
+## Conclusão
 
 O **Direct Exchange** é indicado quando precisamos despachar mensagens para filas específicas, dependendo de uma _routing key_ exata. Isso viabiliza cenários onde cada tipo de mensagem (por exemplo, `"new"`, `"upd"`, `"error"`, etc.) vai para filas diferentes, sem broadcast para todos.
 

@@ -1,12 +1,12 @@
 Até agora, exploramos cenários de comunicação em que enviamos mensagens a filas específicas (ou ao _default exchange_, que faz um _direct_ implícito). Entretanto, há casos em que **precisamos replicar** a mesma mensagem para várias filas ao mesmo tempo. Para isso, o RabbitMQ disponibiliza diferentes tipos de **Exchanges**, entre eles o **Fanout**.
 
-### 2. O que é um Exchange Fanout?
+# O que é um Exchange Fanout?
 
 - Quando publicamos mensagens em uma **Exchange** do tipo **Fanout**, o RabbitMQ **distribui** (replica) automaticamente cada mensagem para **todas** as filas que estiverem _bindadas_ a essa Exchange.
     
 - Em outras palavras, independentemente de _routing key_, **todas** as filas associadas ao Fanout Exchange recebem **uma cópia** da mensagem.
 
-### 3. Exemplos de Uso
+## Exemplos de Uso
 
 1. **Logs**: Quando queremos enviar a mesma mensagem de log para múltiplos destinos (ex.: filas de _monitoring_, _storage_, _analytics_).
     
@@ -14,9 +14,9 @@ Até agora, exploramos cenários de comunicação em que enviamos mensagens a fi
     
 3. **Integrações**: Cópia de uma mesma mensagem de "Pedido" para a fila de “Financeiro”, “Logística” e “Auditoria”, por exemplo.
 
-### 4. Exemplo de Código
+## Exemplo de Código
 
-#### 4.1 Produtor (Criando Exchange Fanout e Bindando Filas)
+### Produtor (Criando Exchange Fanout e Bindando Filas)
 
 ```csharp
 using RabbitMQ.Client;
@@ -121,7 +121,7 @@ public static class Program
 
 ---
 
-#### 4.2 Consumidor (Consumindo cada Fila)
+### Consumidor (Consumindo cada Fila)
 
 ```csharp
 using System.Text;
@@ -198,7 +198,7 @@ public static class Program
 
 ---
 
-### 5. Observações Importantes
+## Observações Importantes
 
 1. **Uso do Fanout**
     
@@ -232,7 +232,7 @@ public static class Program
 
 ---
 
-### 6. Conclusão
+## Conclusão
 
 O **Fanout Exchange** é perfeito para casos em que desejamos **copiar** uma mesma mensagem para diversos destinos (filas). Ele oferece uma forma simples de _broadcast_ sem precisar enviar manualmente a mensagem para cada fila. Cada nova fila que se _bindar_ ao Exchange passará a receber **todas** as mensagens publicadas nele.
 
