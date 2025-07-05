@@ -8,11 +8,6 @@ public static class Program
 {
     public static async Task Main(string[] args)
     {
-        // ReceiveLogsTopic.cs
-        using RabbitMQ.Client;
-        using RabbitMQ.Client.Events;
-        using System.Text;
-
         var factory = new ConnectionFactory { HostName = "localhost" };
 
         using var connection = await factory.CreateConnectionAsync();
