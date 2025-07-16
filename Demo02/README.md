@@ -43,12 +43,6 @@ Após executar o comando:
 ### Exemplo de Código
 
 ```csharp
-using System.Text;
-using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
-using RabbitMQ.Client;
-using WebAppOrder.Domain;
-
 namespace WebAppOrder.Controllers;
 
 [Route("api/[controller]")]
@@ -131,12 +125,6 @@ public class OrderController : ControllerBase
 ### Exemplo de Código
 
 ```csharp
-using RabbitMQ.Client.Events;
-using RabbitMQ.Client;
-using System.Text;
-using System.Text.Json;
-using AppOrderWorker.Domain;
-
 namespace AppOrderWorker;
 
 public class Program

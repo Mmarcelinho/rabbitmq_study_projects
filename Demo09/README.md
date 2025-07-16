@@ -65,10 +65,6 @@ Permitir enviar mensagens para níveis específicos ou grupos de níveis usando 
 ### Publicador (.NET)
 
 ```csharp
-// EmitLogTopic.cs
-using RabbitMQ.Client;
-using System.Text;
-
 var factory = new ConnectionFactory { HostName = "localhost" };
 using var connection = await factory.CreateConnectionAsync();
 using var channel = await connection.CreateChannelAsync();
@@ -92,11 +88,6 @@ Console.WriteLine($"[x] Enviada '{routingKey}':'{message}'");
 ### Consumidor (.NET)
 
 ```csharp
-// ReceiveLogsTopic.cs
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using System.Text;
-
 var factory = new ConnectionFactory { HostName = "localhost" };
 
 using var connection = await factory.CreateConnectionAsync();

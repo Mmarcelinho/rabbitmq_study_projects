@@ -19,10 +19,6 @@ Até agora, exploramos cenários de comunicação em que enviamos mensagens a fi
 ### Produtor (Criando Exchange Fanout e Bindando Filas)
 
 ```csharp
-using RabbitMQ.Client;
-using System.Text;
-using System.Threading.Channels;
-
 namespace Produtor;
 
 public static class Program
@@ -124,10 +120,6 @@ public static class Program
 ### Consumidor (Consumindo cada Fila)
 
 ```csharp
-using System.Text;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-
 namespace Consumidor;
 
 public static class Program

@@ -17,9 +17,6 @@ O round-robin é o comportamento **padrão** do RabbitMQ, portanto não é preci
 Abaixo, um exemplo de produtor em .NET/C#, que envia mensagens para a fila `order` a cada 2 segundos:
 
 ```csharp
-using RabbitMQ.Client;
-using System.Text;
-
 namespace Produtor;
 
 public class Program
@@ -70,10 +67,6 @@ Aqui, um **Consumidor** simples que se conecta à mesma fila `order`. Repare que
 Para demonstrar o round-robin, **basta executar várias instâncias** desse mesmo Consumer em terminais/consoles diferentes:
 
 ```csharp
-using System.Text;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-
 namespace Consumidor;
 
 public class Program

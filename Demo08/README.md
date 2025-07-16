@@ -67,11 +67,6 @@ public class Order
 ### Produtor
 
 ```csharp
-using RabbitMQ.Client;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Channels;
-
 namespace Produtor;
 
 public static class Program
@@ -188,10 +183,6 @@ public static class Program
 ### Consumidor
 
 ```csharp
-using System.Text;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-
 namespace Consumidor;
 
 public static class Program

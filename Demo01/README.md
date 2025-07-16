@@ -18,9 +18,6 @@ A seguir, apresentamos dois códigos simples em C# que demonstram o envio e rece
 ## Produtor (Publisher)
 
 ```csharp
-using RabbitMQ.Client;
-using System.Text;
-
 namespace RProducer;
 
 public class Program
@@ -81,10 +78,6 @@ public class Program
 ## Consumidor (Consumer)
 
 ```csharp
-using System.Text;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-
 namespace RConsumer;
 
 public class Program

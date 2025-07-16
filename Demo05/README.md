@@ -33,10 +33,6 @@ A ideia é demonstrar por que o `autoAck = true` pode levar à perda de mensagen
 ### Consumidor (Manual ACK/NACK)
 
 ```csharp
-using System.Text;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-
 namespace Consumidor;
 
 public static class Program

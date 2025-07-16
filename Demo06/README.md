@@ -17,10 +17,6 @@ Por padrão (se não configurarmos o prefetch), o RabbitMQ pode entregar _muitas
 No código abaixo, configuramos o `prefetchCount: 1` por canal para forçar o RabbitMQ a entregar **apenas uma mensagem por vez** antes de exigir um _ACK_ (confirmação). Isso garante um round-robin efetivo e evita que um consumidor acumule um grande lote de mensagens pendentes.
 
 ```csharp
-using System.Text;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-
 namespace Consumidor;
 
 public static class Program

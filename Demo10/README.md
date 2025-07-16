@@ -102,9 +102,6 @@ Exemplo de bindings (associação entre Exchange e Fila):
 ### Produtor
 
 ```csharp
-using RabbitMQ.Client;
-using System.Text;
-
 var factory = new ConnectionFactory { HostName = "localhost" };
 
 using var connection = await factory.CreateConnectionAsync();
@@ -137,10 +134,6 @@ Console.WriteLine($"Enviada mensagem com header setor=financeiro");
 ### Consumidor
 
 ```csharp
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using System.Text;
-
 var factory = new ConnectionFactory { HostName = "localhost" };
 
 using var connection = await factory.CreateConnectionAsync();

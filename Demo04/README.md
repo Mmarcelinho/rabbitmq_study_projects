@@ -63,10 +63,6 @@ Trechos-chave do que foi discutido:
 Abaixo, vemos um código que cria **2 canais** (loop `for k`) a partir de uma única conexão e, dentro de cada canal, inicia **7 consumidores** (loop `for j`). Assim, temos um total de **14 consumidores** lendo da mesma fila `"order"`.
 
 ```csharp
-using System.Text;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-
 namespace Consumidor;
 
 public static class Program
@@ -148,9 +144,6 @@ public static class Program
 Aqui, abrimos **uma única conexão** e **dois canais** para publicar mensagens. Cada canal corresponde a um “Produtor” diferente, mas **na mesma fila** `"order"`.
 
 ```csharp
-using RabbitMQ.Client;
-using System.Text;
-
 namespace Produtor;
 
 public static class Program
