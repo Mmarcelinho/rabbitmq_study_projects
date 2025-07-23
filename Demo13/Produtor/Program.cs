@@ -41,4 +41,3 @@ public static class Program
         Console.WriteLine("Mensagem persistente publicada com sucesso.");
     }
 }
-}
