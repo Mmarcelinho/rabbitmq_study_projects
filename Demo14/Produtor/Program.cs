@@ -1,75 +1,96 @@
 ﻿using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 using System.Text;
-using System.Text.Json;
-using System.Threading.Channels;
 
 namespace Produtor;
 
 public static class Program
 {
+    private static TaskCompletionSource<bool>? _confirmTcs;
+
     public static async Task Main(string[] args)
     {
         var factory = new ConnectionFactory { HostName = "localhost" };
 
-        using var connection = await factory.CreateConnectionAsync();
-        using var channel = await connection.CreateChannelAsync();
+        var channelOpts = new CreateChannelOptions(
+            publisherConfirmationsEnabled: true,
+            publisherConfirmationTrackingEnabled: true);
 
-        // Ativa Publisher Confirms
-        channel.ConfirmSelect();
+        await using var connection = await factory.CreateConnectionAsync();
+        await using var channel = await connection.CreateChannelAsync(channelOpts);
 
-        // Eventos de confirmação
-        channel.BasicAcks += Channel_BasicAcks;
-        channel.BasicNacks += Channel_BasicNacks;
-        channel.BasicReturn += Channel_BasicReturn;
+        // Eventos de confirmação e retorno de mensagem
+        channel.BasicAcksAsync += OnBasicAcksAsync;
+        channel.BasicNacksAsync += OnBasicNacksAsync;
+        channel.BasicReturnAsync += OnBasicReturnAsync;
 
-        // Declaração da fila
-        await channel.QueueDeclareAsync(queue: "order",
-                                        durable: false,
-                                        exclusive: false,
-                                        autoDelete: false,
-                                        arguments: null);
+        await channel.QueueDeclareAsync(
+            queue: "order",
+            durable: false,
+            exclusive: false,
+            autoDelete: false,
+            arguments: null);
 
         string message = $"{DateTime.UtcNow:o} -> Hello World!";
         var body = Encoding.UTF8.GetBytes(message);
 
-        // Publica mensagem com mandatory=true
-        await channel.BasicPublishAsync(exchange: "",
-                                        routingKey: "order", // Alterar para testar erros
-                                        mandatory: true,
-                                        basicProperties: null,
-                                        body: body);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        // Controle de confirmação do Publisher Confirms
+        _confirmTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var props = new BasicProperties();
+
+        await channel.BasicPublishAsync<BasicProperties>(
+            exchange: "",
+            routingKey: "orderssssss", // rota incorreta para gerar BasicReturn
+            mandatory: true,
+            basicProperties: props,
+            body: body,
+            cancellationToken: cts.Token);
 
         try
         {
-            bool confirmado = await channel.WaitForConfirmsAsync(TimeSpan.FromSeconds(5));
+            bool confirmado = await _confirmTcs.Task.WaitAsync(cts.Token);
 
             if (confirmado)
-                Console.WriteLine($"[x] Mensagem enviada com sucesso: {message}");
+                Console.WriteLine($"[x] Mensagem ACK pelo broker: {message}");
             else
-                Console.WriteLine("[!] Mensagem NÃO confirmada pelo RabbitMQ.");
+                Console.WriteLine("[!] Mensagem NACK pelo broker.");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("[!] Timeout aguardando Publisher Confirm.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[!] Exceção ao confirmar: {ex.Message}");
+            Console.WriteLine($"[!] Erro ao publicar/confirmar: {ex.Message}");
         }
 
         Console.WriteLine("Pressione [enter] para sair.");
         Console.ReadLine();
     }
 
-    private static void Channel_BasicAcks(object sender, BasicAckEventArgs e)
+    private static Task OnBasicAcksAsync(object? sender, BasicAckEventArgs e)
     {
-        Console.WriteLine($"{DateTime.UtcNow:o} -> Basic Ack");
+        _confirmTcs?.TrySetResult(true);
+        Console.WriteLine($"{DateTime.UtcNow:o} -> BasicAck (deliveryTag: {e.DeliveryTag}, multiple: {e.Multiple})");
+        return Task.CompletedTask;
     }
 
-    private static void Channel_BasicNacks(object sender, BasicNackEventArgs e)
+    private static Task OnBasicNacksAsync(object? sender, BasicNackEventArgs e)
     {
-        Console.WriteLine($"{DateTime.UtcNow:o} -> Basic Nack");
+        _confirmTcs?.TrySetResult(false);
+        Console.WriteLine($"{DateTime.UtcNow:o} -> BasicNack (deliveryTag: {e.DeliveryTag}, multiple: {e.Multiple}, requeue: {e.Requeue})");
+        return Task.CompletedTask;
     }
 
-    private static void Channel_BasicReturn(object sender, BasicReturnEventArgs e)
+    private static Task OnBasicReturnAsync(object? sender, BasicReturnEventArgs e)
     {
-        var message = Encoding.UTF8.GetString(e.Body.ToArray());
-        Console.WriteLine($"{DateTime.UtcNow:o} -> Basic Return -> Mensagem original -> {message}");
+        var returnedBody = Encoding.UTF8.GetString(e.Body.ToArray());
+        Console.WriteLine($"{DateTime.UtcNow:o} -> BasicReturn " +
+                          $"[replyCode={e.ReplyCode}, replyText={e.ReplyText}, exchange='{e.Exchange}', routingKey='{e.RoutingKey}'] " +
+                          $"Mensagem original: {returnedBody}");
+        return Task.CompletedTask;
     }
 }

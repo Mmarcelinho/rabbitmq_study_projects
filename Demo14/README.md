@@ -1,17 +1,14 @@
-# Controle de Fluxo com Publisher Confirms
+# Publisher Confirms no RabbitMQ
 
-## Visão Geral
+## Introdução
 
 O mecanismo de **Publisher Confirms** no RabbitMQ permite ao produtor (publisher) saber se a mensagem foi de fato aceita pelo broker. Isso aumenta o controle e confiabilidade da aplicação, pois o produtor pode reagir conforme a confirmação de sucesso (Ack) ou falha (Nack).
 
-Sem o uso de Publisher Confirms, o publisher apenas “envia” a mensagem, sem saber se ela foi entregue ou roteada corretamente. Com esse mecanismo ativado, é possível:
+Sem o uso de Publisher Confirms, o publisher apenas "envia" a mensagem, sem saber se ela foi entregue ou roteada corretamente. Com esse mecanismo ativado, é possível:
 
 - Confirmar se o RabbitMQ processou a mensagem com sucesso (Ack).
-    
 - Detectar se a mensagem falhou no processamento (Nack).
-    
 - Detectar erros de roteamento com eventos de retorno (Return).
-    
 - Adotar lógica de retry, fallback, logging ou outras estratégias com base nas confirmações.
 
 ---
@@ -51,9 +48,7 @@ channel.BasicReturn += (sender, ea) =>
 ```
 
 - `BasicAcks`: confirma que o broker aceitou a mensagem.
-    
 - `BasicNacks`: indica falha de entrega/processamento.
-    
 - `BasicReturn`: ocorre quando a mensagem não pôde ser roteada e foi devolvida (em conjunto com o parâmetro `mandatory = true`).
 
 ---
@@ -144,11 +139,11 @@ Isso ajuda a evitar o descarte silencioso de mensagens.
 ## Estratégias Avançadas
 
 1. **Retry com delay**: ao receber Nack ou retorno, pode-se usar uma fila de retry com TTL para reprocessamento posterior.
-    
+
 2. **Fallback manual**: enviar a mensagem para uma fila de fallback ou registrar em log.
-    
+
 3. **Monitoramento de saúde**: gerar alerta se o canal for desconectado ou se mensagens forem rejeitadas em massa.
-    
+
 4. **Canal desconectado**: se ocorrer falha de conexão, deve-se reconectar e reestabelecer o canal.
 
 ---
@@ -156,10 +151,7 @@ Isso ajuda a evitar o descarte silencioso de mensagens.
 ## Boas Práticas
 
 - Sempre tratar os eventos `BasicAck`, `BasicNack` e `BasicReturn`.
-    
 - Usar `mandatory = true` ao publicar, para capturar falhas de roteamento.
-    
 - Evite depender unicamente do `WaitForConfirmsAsync`, pois mensagens podem ser devolvidas silenciosamente.
-    
 - Use logs para rastrear mensagens que falharam.
 

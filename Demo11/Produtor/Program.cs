@@ -38,11 +38,12 @@ public static class Program
 
             var body = Encoding.UTF8.GetBytes(message);
 
-            var properties = channel.CreateBasicProperties();
+            var properties = new BasicProperties();
             properties.Persistent = true;
 
             await channel.BasicPublishAsync(exchange: "",
                                             routingKey: "task_queue",
+                                            mandatory: false,
                                             basicProperties: properties,
                                             body: body);
 

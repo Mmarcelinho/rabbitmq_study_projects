@@ -24,48 +24,17 @@ public static class Program
         );
 
         var body = Encoding.UTF8.GetBytes("Mensagem com TTL individual");
-        var props = channel.CreateBasicProperties();
+        var props = new BasicProperties();
         props.Expiration = "10000"; // 10 segundos em milissegundos
 
         await channel.BasicPublishAsync(
             exchange: "",
             routingKey: queueName,
+            mandatory: false,
             basicProperties: props,
             body: body
         );
 
         Console.WriteLine("Mensagem publicada com TTL individual de 10 segundos.");
-    }
-
-    private void TtlForQueue()
-    {
-        {
-            var queueName = "test_time_to_live";
-
-            // Define TTL de 22 segundos para toda mensagem da fila
-            var args = new Dictionary<string, object>
-        {
-            { "x-message-ttl", 22000 } // 22 segundos
-        };
-
-            await channel.QueueDeclareAsync(
-                queue: queueName,
-                durable: false,
-                exclusive: false,
-                autoDelete: false,
-                arguments: args
-            );
-
-            var body = Encoding.UTF8.GetBytes("Mensagem com TTL da fila (22 segundos)");
-
-            await channel.BasicPublishAsync(
-                exchange: "",
-                routingKey: queueName,
-                basicProperties: null,
-                body: body
-            );
-
-            Console.WriteLine("Mensagem publicada na fila com TTL padrão de 22 segundos.");
-        }
     }
 }

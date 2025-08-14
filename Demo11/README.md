@@ -1,6 +1,6 @@
-# Estratégia com Dead Letter Queue (DLQ) e uso do campo `arguments`
+# Dead Letter Queue (DLQ) no RabbitMQ
 
-## Visão Geral
+## Introdução
 
 **Dead Letter Queue (DLQ)** é uma estratégia essencial para lidar com mensagens que não podem ser processadas corretamente, evitando que entrem em loop infinito dentro da fila principal e congestionem o sistema. Quando ocorre um erro no consumidor e a mensagem é rejeitada, podemos direcioná-la para uma **fila morta (dead letter queue)** para posterior análise, evitando perda de dados ou comportamento inesperado.
 
@@ -10,30 +10,28 @@
 
 ![alt text](Files/rbmq8.png)
 
+---
+
 ## Por que usar DLQ?
 
-Sem DLQ:
+### Sem DLQ
 
 - A mensagem com erro é devolvida para a mesma fila.
-    
 - O consumidor tenta processá-la novamente, falha, devolve, e isso se repete infinitamente.
-    
 - Causa **loop de reprocessamento**, consumindo recursos e mascarando problemas.
 
-Com DLQ:
+### Com DLQ
 
 - A mensagem é redirecionada para uma **fila separada de análise**, sem afetar o fluxo principal.
 
 ---
 
-## Papel do `arguments`
+## Papel do Arguments
 
 No RabbitMQ, o parâmetro `arguments` na criação de uma fila permite **adicionar configurações extras**, como:
 
 - Definir para onde a mensagem deve ser redirecionada caso seja rejeitada.
-    
 - Definir TTL (tempo de vida da mensagem).
-    
 - Aplicar limite de mensagens ou tamanho da fila.
 
 No caso da DLQ, usamos `arguments` para indicar que, **quando uma mensagem for rejeitada**, ela deve ser encaminhada para um exchange de dead-letter.
@@ -57,7 +55,7 @@ await channel.QueueDeclareAsync(queue: "task_queue",
 
 ---
 
-## Funcionamento completo com DLQ
+## Funcionamento Completo com DLQ
 
 ### Criar o Exchange de DLQ
 
@@ -67,15 +65,11 @@ await channel.ExchangeDeclareAsync("DeadLetterExchange", ExchangeType.Fanout);
 
 > Tipo Fanout: entrega todas as mensagens para todas as filas vinculadas (ideal para centralizar DLQs).
 
----
-
 ### Criar a Fila de DLQ
 
 ```csharp
 await channel.QueueDeclareAsync("DeadLetterQueue", durable: true, exclusive: false, autoDelete: false);
 ```
-
----
 
 ### Vincular Exchange DLQ à Fila DLQ
 
@@ -83,9 +77,7 @@ await channel.QueueDeclareAsync("DeadLetterQueue", durable: true, exclusive: fal
 await channel.QueueBindAsync("DeadLetterQueue", "DeadLetterExchange", routingKey: "");
 ```
 
----
-
-### Declarar a fila principal com argumento de DLQ
+### Declarar a Fila Principal com Argumento de DLQ
 
 ```csharp
 var arguments = new Dictionary<string, object>
@@ -104,7 +96,7 @@ await channel.QueueDeclareAsync(queue: "task_queue",
 
 ---
 
-## Código do Consumidor com tratamento de erro
+## Código do Consumidor com Tratamento de Erro
 
 ```csharp
 var consumer = new AsyncEventingBasicConsumer(channel);
@@ -132,12 +124,12 @@ consumer.ReceivedAsync += async (model, ea) =>
 
 ---
 
-## Resultado prático
+## Resultado Prático
 
 1. Mensagens numéricas (ex: `"123"`) são processadas corretamente.
-    
+
 2. Mensagens inválidas (ex: `"abc"`) são redirecionadas à fila `DeadLetterQueue`.
-    
+
 3. Fila principal permanece limpa e a mensagem problemática pode ser analisada separadamente.
 
 ---
@@ -145,7 +137,7 @@ consumer.ReceivedAsync += async (model, ea) =>
 ## Análise Manual e Estratégias Avançadas
 
 - O RabbitMQ armazena informações de redirecionamento no **header `x-death`**, que pode ser usado para implementar retry limitado.
-    
+
 - Ferramentas como o plugin **Shovel** permitem mover mensagens entre filas manualmente.
-    
+
 - É possível implementar lógica que tenta reprocessar mensagens da DLQ se não excederem um número de tentativas.

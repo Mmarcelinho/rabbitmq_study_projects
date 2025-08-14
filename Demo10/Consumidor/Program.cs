@@ -29,15 +29,14 @@ public static class Program
                                      arguments: new Dictionary<string, object> { { "setor", "financeiro" } });
 
         var consumer = new AsyncEventingBasicConsumer(channel);
-        consumer.ReceivedAsync += (model, ea) =>
+        consumer.ReceivedAsync += async (model, ea) =>
         {
             var body = ea.Body.ToArray();
             var mensagem = Encoding.UTF8.GetString(body);
 
             Console.WriteLine($"Recebido no setor financeiro: {mensagem}");
 
-            channel.BasicAck(ea.DeliveryTag, false);
-            return Task.CompletedTask;
+            await channel.BasicAckAsync(ea.DeliveryTag, false);
         };
 
         await channel.BasicConsumeAsync(queue: queueName, autoAck: false, consumer: consumer);

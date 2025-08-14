@@ -27,13 +27,14 @@ public static class Program
         var body = Encoding.UTF8.GetBytes(mensagem);
 
         // Propriedade de persistência da mensagem
-        var props = channel.CreateBasicProperties();
+        var props = new BasicProperties();
         props.Persistent = true;
 
         // Publicação da mensagem persistente
         await channel.BasicPublishAsync(
             exchange: "",
             routingKey: "fila_duravel",
+            mandatory: false,
             basicProperties: props,
             body: body
         );

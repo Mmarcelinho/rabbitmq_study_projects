@@ -18,7 +18,7 @@ public static class Program
         await channel.ExchangeDeclareAsync("business_exchange", ExchangeType.Headers);
 
         // Exemplo de envio da mensagem com header setor=financeiro
-        var properties = channel.CreateBasicProperties();
+        var properties = new BasicProperties();
         properties.Headers = new Dictionary<string, object> { { "setor", "financeiro" } };
 
         string mensagem = "Nova mensagem para setor financeiro";
@@ -28,6 +28,7 @@ public static class Program
         await channel.BasicPublishAsync(
             exchange: "business_exchange",
             routingKey: "",  // Não usado em Headers
+            mandatory: false,
             basicProperties: properties,
             body: body
         );

@@ -1,22 +1,24 @@
 # Persistência no RabbitMQ
 
+## Introdução
+
 A persistência garante que as filas e mensagens permaneçam disponíveis mesmo após a reinicialização do servidor ou contêiner RabbitMQ. Isso é essencial para evitar perda de dados importantes durante operações comuns, como restart do servidor ou falhas inesperadas.
+
+---
 
 ## Problema Comum
 
 Ao reiniciar o servidor (container ou máquina física), pode ocorrer perda:
 
-- Do próprio container Docker (se estiver rodando com o parâmetro `--rm`);
-    
-- Das filas criadas;
-    
+- Do próprio container Docker (se estiver rodando com o parâmetro `--rm`).
+- Das filas criadas.
 - Das mensagens que estavam nas filas.
 
 ---
 
-## Evitando perda do Container Docker
+## Evitando Perda do Container Docker
 
-### Explicação:
+### Explicação
 
 Ao executar o RabbitMQ no Docker, se você utilizar o comando com `--rm`, o container será **removido automaticamente** ao parar ou reiniciar, causando perda total do estado:
 
@@ -24,7 +26,7 @@ Ao executar o RabbitMQ no Docker, se você utilizar o comando com `--rm`, o cont
 docker run --rm rabbitmq:latest
 ```
 
-### Solução:
+### Solução
 
 Para persistir o container, basta remover o parâmetro `--rm`:
 
@@ -41,7 +43,7 @@ docker stop <nome_container>
 
 ---
 
-## Tornando filas persistentes
+## Tornando Filas Persistentes
 
 Por padrão, as filas são transitórias (`durable: false`) e desaparecem ao reiniciar o RabbitMQ. Para persistir filas, configure:
 
@@ -59,7 +61,7 @@ A propriedade `durable: true` indica ao RabbitMQ para salvar a definição da fi
 
 ---
 
-## Tornando mensagens persistentes
+## Tornando Mensagens Persistentes
 
 Mesmo com a fila durável, as mensagens são transitórias por padrão. Para persistir mensagens, você precisa configurar uma propriedade adicional nas mensagens:
 
@@ -84,23 +86,21 @@ Com essa configuração (`Persistent = true`), as mensagens são armazenadas em 
 Ao implementar corretamente, temos:
 
 - Container **persistente** (remover `--rm`).
-    
 - Fila **persistente** (`durable: true`).
-    
 - Mensagens **persistentes** (`Persistent = true`).
 
 Com essa configuração completa, mesmo após restart do container, tudo se mantém intacto.
 
 ---
 
-## Trade-off (Impacto na Performance):
+## Trade-off (Impacto na Performance)
 
 - Filas e mensagens persistentes têm impacto no desempenho, com redução média de **até 20%** devido à gravação em disco.
-    
 - Recomenda-se utilizar discos rápidos (SSD) para reduzir essa latência adicional.
 
 ---
-## Exemplo 
+
+## Exemplo Completo
 
 ```csharp
 var factory = new ConnectionFactory { HostName = "localhost" };

@@ -1,18 +1,26 @@
+# Exchange Fanout no RabbitMQ
+
+## Introdução
+
 Até agora, exploramos cenários de comunicação em que enviamos mensagens a filas específicas (ou ao _default exchange_, que faz um _direct_ implícito). Entretanto, há casos em que **precisamos replicar** a mesma mensagem para várias filas ao mesmo tempo. Para isso, o RabbitMQ disponibiliza diferentes tipos de **Exchanges**, entre eles o **Fanout**.
 
-# O que é um Exchange Fanout?
+---
+
+## O que é um Exchange Fanout?
 
 - Quando publicamos mensagens em uma **Exchange** do tipo **Fanout**, o RabbitMQ **distribui** (replica) automaticamente cada mensagem para **todas** as filas que estiverem _bindadas_ a essa Exchange.
-    
+
 - Em outras palavras, independentemente de _routing key_, **todas** as filas associadas ao Fanout Exchange recebem **uma cópia** da mensagem.
 
-## Exemplos de Uso
+### Exemplos de Uso
 
 1. **Logs**: Quando queremos enviar a mesma mensagem de log para múltiplos destinos (ex.: filas de _monitoring_, _storage_, _analytics_).
-    
+
 2. **Broadcast**: Em aplicações de _broadcast_ em tempo real, cada consumidor (fila) recebe o mesmo dado ao mesmo tempo.
-    
-3. **Integrações**: Cópia de uma mesma mensagem de "Pedido" para a fila de “Financeiro”, “Logística” e “Auditoria”, por exemplo.
+
+3. **Integrações**: Cópia de uma mesma mensagem de "Pedido" para a fila de "Financeiro", "Logística" e "Auditoria", por exemplo.
+
+---
 
 ## Exemplo de Código
 
@@ -107,13 +115,13 @@ public static class Program
 }
 ```
 
-**Notas**:
+#### Notas
 
-- `ExchangeDeclareAsync("order", ExchangeType.Fanout)` cria uma Exchange chamada “order” do tipo **Fanout**.
-    
+- `ExchangeDeclareAsync("order", ExchangeType.Fanout)` cria uma Exchange chamada "order" do tipo **Fanout**.
+
 - **Bindings**: `QueueBindAsync("order", "order", string.Empty)` indica que a fila `"order"` recebe mensagens publicadas em `"order"` Exchange. Podemos repetir para quantas filas quisermos.
-    
-- Quando publicamos (`BasicPublishAsync`) no Exchange “order”, **todas** as filas bindadas recebem **cópias** da mensagem.
+
+- Quando publicamos (`BasicPublishAsync`) no Exchange "order", **todas** as filas bindadas recebem **cópias** da mensagem.
 
 ---
 
@@ -182,45 +190,45 @@ public static class Program
 }
 ```
 
-**Notas**:
+#### Notas
 
 - Cada consumidor é ligado a uma **fila** específica. Como o Exchange **Fanout** envia mensagens para **todas as filas** associadas, cada consumidor (ligado a cada fila) receberá as mesmas mensagens.
-    
+
 - Podemos rodar este executável múltiplas vezes, cada vez passando um parâmetro diferente (`"order"`, `"log"`, `"finance_orders"`) para consumir de filas distintas.
 
 ---
 
 ## Observações Importantes
 
-1. **Uso do Fanout**
-    
-    - **routingKey** é **ignorada** nesse tipo de exchange. A mensagem vai para **todas** as filas bindadas.
-        
-    - Bom para _broadcast_, mas pode gerar grande volume de mensagens duplicadas.
-    
-2. **Outros Tipos de Exchange**
-    
-    - **Direct**: Roteia conforme `routingKey` exata.
-        
-    - **Topic**: Roteia por _pattern_ (curinga) de `routingKey`.
-        
-    - **Headers**: Usa cabeçalhos (Headers) para determinar roteamento.
-    
-3. **Produtor**
-    
-    - Agora publica em uma **Exchange** (`exchange: "order"`) em vez de publicar diretamente na fila.
-    
-4. **Consumidor**
-    
-    - Continua consumindo de uma **fila** normal. As filas recebem as mensagens da _Fanout Exchange_ via **binding**.
-    
-5. **Balanceamento**
-    
-    - É possível combinar com `BasicQos` (prefetch) para cada consumidor gerenciar melhor seu volume de mensagens, especialmente quando há múltiplos consumidores por fila.
-    
-6. **Escalabilidade**
-    
-    - Se preciso replicar a mesma informação para várias filas (e, consequentemente, para vários serviços), o Fanout Exchange simplifica a arquitetura.
+### Uso do Fanout
+
+- **routingKey** é **ignorada** nesse tipo de exchange. A mensagem vai para **todas** as filas bindadas.
+
+- Bom para _broadcast_, mas pode gerar grande volume de mensagens duplicadas.
+
+### Outros Tipos de Exchange
+
+- **Direct**: Roteia conforme `routingKey` exata.
+
+- **Topic**: Roteia por _pattern_ (curinga) de `routingKey`.
+
+- **Headers**: Usa cabeçalhos (Headers) para determinar roteamento.
+
+### Produtor
+
+- Agora publica em uma **Exchange** (`exchange: "order"`) em vez de publicar diretamente na fila.
+
+### Consumidor
+
+- Continua consumindo de uma **fila** normal. As filas recebem as mensagens da _Fanout Exchange_ via **binding**.
+
+### Balanceamento
+
+- É possível combinar com `BasicQos` (prefetch) para cada consumidor gerenciar melhor seu volume de mensagens, especialmente quando há múltiplos consumidores por fila.
+
+### Escalabilidade
+
+- Se preciso replicar a mesma informação para várias filas (e, consequentemente, para vários serviços), o Fanout Exchange simplifica a arquitetura.
 
 ---
 
@@ -231,5 +239,5 @@ O **Fanout Exchange** é perfeito para casos em que desejamos **copiar** uma mes
 Esse padrão facilita cenários como:
 
 - **Logs centralizados**: toda mensagem é enviada a várias filas, cada qual tratada por equipes ou propósitos diferentes (monitoramento, auditoria, etc.).
-    
+
 - **Notificações** simultâneas em diferentes sistemas.

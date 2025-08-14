@@ -1,14 +1,18 @@
-# O que é Round-Robin?
+# Round-Robin no RabbitMQ
 
-No contexto do RabbitMQ, o **Round-Robin** é um modo de distribuição de mensagens entre múltiplos consumidores. Por padrão, quando existe mais de um consumidor “inscrito” (consumindo da mesma fila), o broker distribui as mensagens em sequência para cada consumidor, de forma circular.
+## Introdução
+
+No contexto do RabbitMQ, o **Round-Robin** é um modo de distribuição de mensagens entre múltiplos consumidores. Por padrão, quando existe mais de um consumidor "inscrito" (consumindo da mesma fila), o broker distribui as mensagens em sequência para cada consumidor, de forma circular.
 
 Imagine que você possui três consumidores: **A**, **B** e **C**. A primeira mensagem vai para o consumidor **A**, a segunda para **B**, a terceira para **C**, a quarta novamente para **A**, e assim por diante, **ciclicamente**. Dessa forma, o RabbitMQ busca equilibrar a carga de mensagens entre todos os consumidores conectados.
 
-##  Motivação (por que usar vários consumidores?)
+### Motivação (por que usar vários consumidores?)
 
 Ter um **Produtor** gerando muitas mensagens pode levar a um acúmulo na fila se um único **Consumidor** não processar tudo rapidamente. Para lidar com alto volume, basta **adicionar mais consumidores**. Assim, se uma fila estiver acumulando mensagens, vários processos (Workers) podem consumir simultaneamente, ganhando desempenho e escalabilidade.
 
 O round-robin é o comportamento **padrão** do RabbitMQ, portanto não é preciso nenhuma configuração especial para que a distribuição seja feita dessa maneira.
+
+---
 
 ## Exemplo Prático com Vários Consumidores
 
@@ -119,39 +123,39 @@ public class Program
 }
 ```
 
+---
+
 ## Visualizando o Comportamento Round-Robin
 
 1. **Suba o Produtor** (por exemplo, `dotnet run` no projeto _Produtor_). Ele enviará mensagens numeradas (`OrderNumber: 0`, `OrderNumber: 1`, etc.) a cada 2 segundos para a fila `order`.
-    
+
 2. **Abra duas ou mais janelas de console** e rode o mesmo executável de _Consumidor_ (ou `dotnet run` em múltiplas instâncias). Cada instância estará conectada na fila `order`.
-    
+
 3. Observe que as mensagens serão alternadas entre os consumidores:
-    
-    - Consumidor 1: OrderNumber: 0, OrderNumber: 2, OrderNumber: 4, ...
-        
-    - Consumidor 2: OrderNumber: 1, OrderNumber: 3, OrderNumber: 5, ...
-        
-    - E assim por diante, caso existam mais consumidores.
+
+   - Consumidor 1: OrderNumber: 0, OrderNumber: 2, OrderNumber: 4, ...
+   - Consumidor 2: OrderNumber: 1, OrderNumber: 3, OrderNumber: 5, ...
+   - E assim por diante, caso existam mais consumidores.
 
 Se um dos consumidores for encerrado, o round-robin continuará automaticamente apenas entre os consumidores ativos.
+
+---
 
 ## Principais Benefícios
 
 - **Escalonamento Horizontal**: conforme a fila cresce, você pode subir mais instâncias de consumidores para dar conta do volume.
-    
 - **Desacoplamento**: a lógica de produção das mensagens fica separada da lógica de consumo.
-    
 - **Equilíbrio Automático**: o próprio RabbitMQ se encarrega de intercalar a entrega das mensagens de forma circular entre todos os consumidores disponíveis.
+
+---
 
 ## Conclusão
 
 O round-robin é o método **padrão** do RabbitMQ para distribuir mensagens quando há vários consumidores. Basta ter mais de um processo/instância consumindo a mesma fila que o broker se encarregará de distribuir as mensagens de modo circular, sem a necessidade de qualquer configuração adicional.
 
-> **Dicas Finais**
-> 
-> - É possível rodar o mesmo código de consumidor em diferentes máquinas ou contêineres, aumentando a escalabilidade.
->     
-> - Caso seja necessário **balancear** melhor a carga quando as tarefas têm tempos de processamento muito diferentes, pode-se configurar o **prefetch** (com `BasicQos`) para evitar que um consumidor receba muitas mensagens simultaneamente.
->     
-> - Para maior confiabilidade, habilite **ACK manual** (autoAck=false) e durabilidade das mensagens (durable/persistent).
->    
+### Dicas Finais
+
+- É possível rodar o mesmo código de consumidor em diferentes máquinas ou contêineres, aumentando a escalabilidade.
+- Caso seja necessário **balancear** melhor a carga quando as tarefas têm tempos de processamento muito diferentes, pode-se configurar o **prefetch** (com `BasicQos`) para evitar que um consumidor receba muitas mensagens simultaneamente.
+- Para maior confiabilidade, habilite **ACK manual** (autoAck=false) e durabilidade das mensagens (durable/persistent).
+    

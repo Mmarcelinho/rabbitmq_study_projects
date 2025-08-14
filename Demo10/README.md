@@ -1,6 +1,6 @@
-# Exchange do Tipo Headers
+# Exchange Headers no RabbitMQ
 
-## Conceito Geral
+## Introdução
 
 O Exchange do tipo **Headers** realiza o roteamento de mensagens com base em **headers (cabeçalhos)** definidos na mensagem, ao invés de utilizar a tradicional **Routing Key** como nos exchanges dos tipos Direct, Topic ou Fanout.
 
@@ -13,26 +13,19 @@ Este tipo é extremamente útil em cenários que exigem maior flexibilidade, esp
 Diferentemente dos exchanges anteriores:
 
 - **Fanout:** envia cópia da mensagem para todas as filas vinculadas.
-    
 - **Direct:** envia mensagem com base em uma chave exata (Routing Key).
-    
 - **Topic:** envia mensagem com base em padrões definidos na Routing Key.
 
 O exchange **Headers**:
 
 - Não utiliza Routing Key diretamente.
-    
 - Utiliza um conjunto de headers (cabeçalhos) no formato **chave-valor**.
-    
 - É mais flexível para roteamento baseado em critérios complexos.
-    
 
-**Características principais:**
+### Características Principais
 
 - Cabeçalhos são definidos na mensagem.
-    
 - Cada fila é ligada (binding) ao exchange através de cabeçalhos específicos.
-    
 - As mensagens são roteadas para filas que possuem cabeçalhos compatíveis.
 
 ---
@@ -42,56 +35,46 @@ O exchange **Headers**:
 Imagine um cenário com três setores diferentes:
 
 - **Financeiro**
-    
 - **Contabilidade**
-    
 - **Logística**
 
 Você deseja enviar mensagens específicas para cada setor usando headers:
 
 - Mensagens com header `setor = financeiro` vão para a fila **financeiro**.
-    
 - Mensagens com header `setor = contabilidade` vão para a fila **contabilidade**.
-    
 - Mensagens com header `setor = logistica` vão para a fila **logistica**.
-    
 - Todas as mensagens do setor **financeiro** devem ser copiadas também para uma fila adicional chamada **auditoria**.
 
 ---
 
 ## Configuração no RabbitMQ Management
 
-##  Criar Exchange Headers
+### Criar Exchange Headers
 
 - **Exchange name:** `business_exchange`
-    
 - **Type:** `headers`
-    
 
-## Criar Filas
+### Criar Filas
 
 Crie as filas:
 
 - financeiro
-    
 - contabilidade
-    
 - logistica
-    
 - auditoria
 
-## Binding com Headers
+### Binding com Headers
 
 Exemplo de bindings (associação entre Exchange e Fila):
 
-|Fila|Header (Argumento)|Valor|
-|---|---|---|
-|financeiro|setor|financeiro|
-|contabilidade|setor|contabilidade|
-|logistica|setor|logistica|
-|auditoria|setor|financeiro|
+| Fila | Header (Argumento) | Valor |
+|------|-------------------|-------|
+| financeiro | setor | financeiro |
+| contabilidade | setor | contabilidade |
+| logistica | setor | logistica |
+| auditoria | setor | financeiro |
 
-**Observação:**
+#### Observação
 
 - Quando uma mensagem chega com `setor=financeiro`, ela vai para as filas `financeiro` **e também** `auditoria`.
 
@@ -177,9 +160,9 @@ Console.ReadLine();
 ## Resultado Esperado da Demo
 
 - Ao enviar mensagens com header `setor=financeiro`, as filas **financeiro** e **auditoria** recebem a mensagem.
-    
+
 - Ao enviar mensagens com header `setor=contabilidade`, apenas a fila **contabilidade** recebe a mensagem.
-    
+
 - Ao enviar mensagens com header `setor=logistica`, apenas a fila **logistica** recebe a mensagem.
 
 Isso ocorre porque o exchange Headers roteia mensagens de acordo com os cabeçalhos definidos na mensagem e nos bindings das filas.
@@ -189,9 +172,9 @@ Isso ocorre porque o exchange Headers roteia mensagens de acordo com os cabeçal
 ## Principais Casos de Uso
 
 - Sistemas de notificação (e-mail, SMS, push) baseados em propriedades dinâmicas.
-    
+
 - Processamento específico de arquivos/imagens com diferentes formatos (jpeg, pdf, png).
-    
+
 - Aplicações que precisam de flexibilidade na definição das regras de roteamento das mensagens (mapeamento dinâmico via HTTP headers).
 
 ---
@@ -199,7 +182,7 @@ Isso ocorre porque o exchange Headers roteia mensagens de acordo com os cabeçal
 ## Pontos Importantes
 
 - Exchange do tipo Headers ignora a Routing Key tradicional.
-    
+
 - Roteia exclusivamente com base nos cabeçalhos (headers).
-    
+
 - Muito flexível e poderosa para regras complexas.

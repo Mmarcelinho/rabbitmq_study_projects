@@ -1,19 +1,16 @@
-# Conceitos Fundamentais
+# Conexões e Canais no RabbitMQ
+
+## Conceitos Fundamentais
 
 - **Conexão (Connection)**: Uma sessão TCP aberta com o broker RabbitMQ.
-    
 - **Channel**: Uma via de comunicação lógica dentro de uma conexão. Normalmente, cada **produtor** precisa de seu próprio channel, enquanto consumidores podem compartilhar ou não um channel (dependendo do cenário).
-    
 - **Fila (Queue)**: Contém as mensagens enviadas pelos produtores e aguardando o processamento pelos consumidores.
-    
 - **Balanceamento**: Quando vários consumidores estão associados a uma mesma fila, o RabbitMQ geralmente realiza um **round-robin** para distribuir mensagens.
-    
 - **Objetivo**: Aumentar ou reduzir a quantidade de canais e consumidores de acordo com a capacidade de produção/consumo.
 
 ---
 
-
-## Ilustrações 
+## Ilustrações
 
 ![alt text](Files/rbmq1.png)
 
@@ -50,7 +47,7 @@ Arquitetura onde temos **duas conexões** (uma para produtores, outra para consu
 Trechos-chave do que foi discutido:
 
 > (...) Quando você tem uma **capacidade de produção muito maior** do que a capacidade de consumo, é preciso aumentar o número de consumidores (workers). O RabbitMQ gerencia conexões e canais. Você pode ter **uma conexão** e **vários channels** dentro dela, ou **várias conexões**, cada qual com seus channels. Produtores **não** devem compartilhar o mesmo channel, mas podem compartilhar a mesma conexão em channels distintos.  
-> Consumidores podem ser mais “livres”: podem compartilhar channel ou usar channels separados.
+> Consumidores podem ser mais "livres": podem compartilhar channel ou usar channels separados.
 
 > Se a conexão cair, todos os channels daquela conexão caem. Porém, se houver outra conexão ativa, essa permanece. Por isso, definir quantas conexões e quantos canais depende da **estratégia de isolamento** e **recursos** disponíveis.  
 > É comum abrir **mais** canais para aumentar a taxa de publicação/consumo, mas também é possível **multiplicar conexões** para isolar falhas ou distribuir a carga em vários processos distintos.  
@@ -129,19 +126,17 @@ public static class Program
 }
 ```
 
-**Notas**:
+### Notas
 
 - `autoAck = true` retira as mensagens da fila assim que entregues ao consumidor.
-    
 - O `Console.ReadLine()` final mantém o programa vivo.
-    
-- Cada `BuildAndRunWorker` cria um consumidor que fica “escutando” a fila.
+- Cada `BuildAndRunWorker` cria um consumidor que fica "escutando" a fila.
 
 ---
 
 ## Produtor
 
-Aqui, abrimos **uma única conexão** e **dois canais** para publicar mensagens. Cada canal corresponde a um “Produtor” diferente, mas **na mesma fila** `"order"`.
+Aqui, abrimos **uma única conexão** e **dois canais** para publicar mensagens. Cada canal corresponde a um "Produtor" diferente, mas **na mesma fila** `"order"`.
 
 ```csharp
 namespace Produtor;
@@ -209,29 +204,42 @@ public static class Program
 }
 ```
 
-**Notas**:
+### Notas
 
 - Cada produtor executa dentro de um `Task.Run`, publicando a cada 1 segundo.
-    
 - Se você quiser adicionar mais produtores, basta criar mais channels ou conexões.
 
 ---
 
 ## Observações Gerais
 
-1. **Balanceamento**: O RabbitMQ faz round-robin entre consumidores pendurados na **mesma** fila.
-    
-2. **Conexões**: Cada conexão é mais “cara” de manter do que abrir canais extras. Porém, múltiplas conexões podem isolar falhas.
-    
-3. **Produtor**: Em geral, **um channel por produtor** é a boa prática. Não colocar vários produtores competindo no mesmo channel.
-    
-4. **Consumidor**: Pode compartilhar channel ou ter um channel individual, dependendo do volume de mensagens e necessidades de isolamento.
-    
-5. **Teste de Carga**: Sempre teste quantas conexões e canais o seu sistema e o broker suportam confortavelmente.
-    
-6. **ACK Manual**: Em produção, convém usar `autoAck = false` e fazer _ack_ somente depois que a mensagem foi processada com sucesso.
-    
-7. **Durabilidade**: Para evitar perda de mensagens em caso de reinício do RabbitMQ, marque a fila como **durable** e envie mensagens **persistentes**.
+### Balanceamento
+
+- O RabbitMQ faz round-robin entre consumidores pendurados na **mesma** fila.
+
+### Conexões
+
+- Cada conexão é mais "cara" de manter do que abrir canais extras. Porém, múltiplas conexões podem isolar falhas.
+
+### Produtor
+
+- Em geral, **um channel por produtor** é a boa prática. Não colocar vários produtores competindo no mesmo channel.
+
+### Consumidor
+
+- Pode compartilhar channel ou ter um channel individual, dependendo do volume de mensagens e necessidades de isolamento.
+
+### Teste de Carga
+
+- Sempre teste quantas conexões e canais o seu sistema e o broker suportam confortavelmente.
+
+### ACK Manual
+
+- Em produção, convém usar `autoAck = false` e fazer _ack_ somente depois que a mensagem foi processada com sucesso.
+
+### Durabilidade
+
+- Para evitar perda de mensagens em caso de reinício do RabbitMQ, marque a fila como **durable** e envie mensagens **persistentes**.
 
 ---
 

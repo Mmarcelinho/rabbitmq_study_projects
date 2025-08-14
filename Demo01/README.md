@@ -1,6 +1,10 @@
-# RabbitMQ
+# RabbitMQ - Conceitos Básicos
+
+## Introdução
 
 O RabbitMQ é um broker de mensagens que atua como intermediário no envio e recebimento de dados (mensagens) entre aplicações. Ele facilita a comunicação assíncrona, permitindo que uma ou mais aplicações (produtores) publiquem mensagens em filas, enquanto uma ou mais aplicações (consumidores) leem e processam essas mensagens independentemente.
+
+### Componentes Principais
 
 - **Produtor (Producer)**: A aplicação que envia (publica) mensagens para uma fila.
 - **Consumidor (Consumer)**: A aplicação que recebe (consome) as mensagens de uma fila.
@@ -15,7 +19,7 @@ Essa arquitetura é bastante utilizada para **desacoplar** sistemas, ou seja, pa
 
 A seguir, apresentamos dois códigos simples em C# que demonstram o envio e recebimento de mensagens usando RabbitMQ. Um projeto funciona como **Produtor** e o outro como **Consumidor**.
 
-## Produtor (Publisher)
+### Produtor (Publisher)
 
 ```csharp
 namespace RProducer;
@@ -65,7 +69,7 @@ public class Program
 }
 ```
 
-### Observações Importantes
+#### Observações Importantes
 
 1. **ConnectionFactory**: Centraliza as informações de conexão (host, porta, credenciais, etc.).
 2. **CreateConnectionAsync** e **CreateChannelAsync**: Abrem a conexão com o RabbitMQ e criam um canal para a comunicação.
@@ -75,7 +79,7 @@ public class Program
 
 ---
 
-## Consumidor (Consumer)
+### Consumidor (Consumer)
 
 ```csharp
 namespace RConsumer;
@@ -129,7 +133,7 @@ public class Program
 }
 ```
 
-### Observações Importantes
+#### Observações Importantes
 
 1. **QueueDeclareAsync**: Mais uma vez, garante que a fila exista. Embora o produtor também declare a fila, é seguro que o consumidor também a declare, pois não sabemos qual aplicação iniciará primeiro.
 2. **AsyncEventingBasicConsumer**: Consumidor que funciona de forma assíncrona. Sempre que chega uma mensagem, o evento `ReceivedAsync` é disparado.
@@ -143,8 +147,10 @@ public class Program
 Para executar o exemplo:
 
 1. **Inicie o serviço RabbitMQ** na sua máquina ou em um servidor.
-    - Por padrão, o RabbitMQ fica disponível na porta 5672, e a interface de administração, se habilitada, na porta 15672.
+   - Por padrão, o RabbitMQ fica disponível na porta 5672, e a interface de administração, se habilitada, na porta 15672.
+
 2. **Compile e execute** o projeto do **Consumidor (RConsumer)**.
+
 3. **Compile e execute** o projeto do **Produtor (RProducer)**.
 
 Ao executar o **Consumidor**, você deve ver a mensagem:
@@ -174,24 +180,29 @@ Do outro lado:
 
 ## Pontos de Atenção e Boas Práticas
 
-1. **Durabilidade (durable)** e **Persistência**
-    
-    - Para ambientes de produção, é comum marcar a fila como durável e também configurar as mensagens como persistentes para evitar perda em caso de reinício do broker.
-2. **Confirmações de Mensagem (Acknowledgements)**
-    
-    - Ao usar `autoAck = true`, a mensagem é considerada entregue assim que chega no consumidor. Em situações críticas, convém usar `autoAck = false` e dar o _ack_ manualmente (ex.: `channel.BasicAck`) somente depois de processar a mensagem com sucesso.
-3. **Tratamento de Erros**
-    
-    - Caso ocorra uma exceção durante o processamento, podemos utilizar o _Negative Acknowledge_ (`BasicNack`) para retornar a mensagem à fila (ou descartá-la, dependendo da estratégia).
-4. **Exchange**
-    
-    - No exemplo acima, usamos o _default exchange_ (string vazia) com `routingKey` igual ao nome da fila. Em cenários avançados, podemos configurar _exchanges_ personalizadas (tipo _direct_, _topic_, _fanout_, etc.) para mais flexibilidade e roteamento complexo.
-5. **Escalabilidade**
-    
-    - Com RabbitMQ, podemos ter múltiplos consumidores lendo de uma mesma fila para paralelizar o processamento. Também podemos ter múltiplos produtores publicando em alta escala.
-6. **Monitoramento**
-    
-    - Usar o **Management Plugin** do RabbitMQ (normalmente em `http://localhost:15672`) para acompanhar o status das filas, mensagens pendentes, conexões e muito mais.
+### Durabilidade (durable) e Persistência
+
+- Para ambientes de produção, é comum marcar a fila como durável e também configurar as mensagens como persistentes para evitar perda em caso de reinício do broker.
+
+### Confirmações de Mensagem (Acknowledgements)
+
+- Ao usar `autoAck = true`, a mensagem é considerada entregue assim que chega no consumidor. Em situações críticas, convém usar `autoAck = false` e dar o _ack_ manualmente (ex.: `channel.BasicAck`) somente depois de processar a mensagem com sucesso.
+
+### Tratamento de Erros
+
+- Caso ocorra uma exceção durante o processamento, podemos utilizar o _Negative Acknowledge_ (`BasicNack`) para retornar a mensagem à fila (ou descartá-la, dependendo da estratégia).
+
+### Exchange
+
+- No exemplo acima, usamos o _default exchange_ (string vazia) com `routingKey` igual ao nome da fila. Em cenários avançados, podemos configurar _exchanges_ personalizadas (tipo _direct_, _topic_, _fanout_, etc.) para mais flexibilidade e roteamento complexo.
+
+### Escalabilidade
+
+- Com RabbitMQ, podemos ter múltiplos consumidores lendo de uma mesma fila para paralelizar o processamento. Também podemos ter múltiplos produtores publicando em alta escala.
+
+### Monitoramento
+
+- Usar o **Management Plugin** do RabbitMQ (normalmente em `http://localhost:15672`) para acompanhar o status das filas, mensagens pendentes, conexões e muito mais.
 
 ---
 

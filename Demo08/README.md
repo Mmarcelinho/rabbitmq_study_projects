@@ -1,6 +1,6 @@
-# Exchange Direct 
+# Exchange Direct no RabbitMQ
 
-## Cenário
+## Introdução
 
 Em tutoriais anteriores, exploramos o **Fanout Exchange** (que envia cada mensagem para **todas** as filas _bindadas_). Agora, examinamos o **Direct Exchange**, que permite encaminhar mensagens para filas específicas com base em uma **routing key** exata.
 
@@ -12,10 +12,9 @@ Isso é útil quando queremos, por exemplo, ter filas diferentes para tipos dist
 
 O **Direct Exchange** roteará a mensagem apenas para filas cujo _binding key_ corresponda exatamente à _routing key_ fornecida ao publicar.
 
-Exemplo simplificado:
+### Exemplo Simplificado
 
 - **Fila A** está vinculada ao Exchange com _binding key_ `"order_new"`.
-    
 - **Fila B** está vinculada ao Exchange com _binding key_ `"order_upd"`.
 
 Se publicarmos uma mensagem com **routing key** `"order_new"`, apenas a **Fila A** a receberá.
@@ -23,7 +22,6 @@ Se publicarmos uma mensagem com **routing key** `"order_new"`, apenas a **Fila A
 No caso do código abaixo, temos:
 
 1. Uma fila _"order"_ (que recebe `"order_new"` e `"order_upd"`).
-    
 2. Uma fila _"finance_orders"_ (que recebe apenas `"order_new"`).
 
 Dessa forma, as mensagens com routing key `"order_new"` são enviadas para **duas filas** (porque `"order"` e `"finance_orders"` ambas possuem _binding key_ `"order_new"`). Já as mensagens com routing key `"order_upd"` são enviadas **somente** para a fila `"order"`.
@@ -32,7 +30,7 @@ Dessa forma, as mensagens com routing key `"order_new"` são enviadas para **dua
 
 ## Código de Exemplo
 
-### Classe de Domínio: `Order`
+### Classe de Domínio: Order
 
 ```csharp
 namespace Produtor;
@@ -60,7 +58,9 @@ public class Order
 }
 ```
 
-**Observação**: Essa classe representa um pedido simples com `Id`, `CreatedDate`, `LastUpdated` e `Amount`.
+#### Observação
+
+Essa classe representa um pedido simples com `Id`, `CreatedDate`, `LastUpdated` e `Amount`.
 
 ---
 
@@ -165,18 +165,14 @@ public static class Program
 #### Observações Principais
 
 - **Exchange**: criada com `ExchangeType.Direct`.
-    
+
 - **Bindings**:
-    
-    - `"order"` é bindada com _routing key_ `"order_new"` e `"order_upd"`.
-        
-    - `"finance_orders"` é bindada apenas com _routing key_ `"order_new"`.
-        
+  - `"order"` é bindada com _routing key_ `"order_new"` e `"order_upd"`.
+  - `"finance_orders"` é bindada apenas com _routing key_ `"order_new"`.
+
 - **Publicações**:
-    
-    - Mensagens com routing key `"order_new"` chegam **a duas filas** (`"order"` e `"finance_orders"`).
-        
-    - Mensagens com routing key `"order_upd"` chegam **somente** à fila `"order"`.
+  - Mensagens com routing key `"order_new"` chegam **a duas filas** (`"order"` e `"finance_orders"`).
+  - Mensagens com routing key `"order_upd"` chegam **somente** à fila `"order"`.
 
 ---
 
@@ -242,12 +238,12 @@ public static class Program
 }
 ```
 
-**Notas**:
+#### Notas
 
 - **Consumidor** continua quase idêntico a outros exemplos anteriores.
-    
+
 - Usamos `autoAck = false` e `BasicAckAsync` (ou `BasicNackAsync`) para confirmar ou reenviar mensagens em caso de falha.
-    
+
 - Podemos rodar este consumidor múltiplas vezes, cada vez apontando para `"order"` ou `"finance_orders"` (ou ambos).
 
 ---
@@ -255,9 +251,9 @@ public static class Program
 ## Funcionamento Prático
 
 1. Ao gerar um **novo** pedido (routing key = `"order_new"`), a mensagem é **entregue** às filas `"order"` e `"finance_orders"`.
-    
+
 2. Ao **atualizar** um pedido (routing key = `"order_upd"`), a mensagem é **entregue** apenas à fila `"order"`.
-    
+
 3. Cada consumidor atrelado a essas filas recebe as mensagens correspondentes.
 
 Esse **roteamento** é feito automaticamente pelo RabbitMQ com base nos _binds_ e _routing keys_ definidas.
@@ -268,10 +264,10 @@ Esse **roteamento** é feito automaticamente pelo RabbitMQ com base nos _binds_ 
 
 O **Direct Exchange** é indicado quando precisamos despachar mensagens para filas específicas, dependendo de uma _routing key_ exata. Isso viabiliza cenários onde cada tipo de mensagem (por exemplo, `"new"`, `"upd"`, `"error"`, etc.) vai para filas diferentes, sem broadcast para todos.
 
-**Dicas e Práticas**:
+### Dicas e Práticas
 
 - Combine **Direct Exchanges** com outras estratégias (como filas de _Dead Letter_ para erros).
-    
+
 - Em cenários complexos, avalie se **Topic Exchange** não atenderia melhor (pois permite _wildcards_).
-    
+
 - Sempre monitore e teste cenários de publicação/consumo para verificar throughput e garantir roteamento conforme esperado.

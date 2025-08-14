@@ -1,10 +1,14 @@
-# Time To Live (TTL) 
+# Time To Live (TTL) no RabbitMQ
+
+## Introdução
 
 TTL define um tempo de expiração para mensagens em filas. Se a mensagem não for consumida dentro do tempo especificado, ela é automaticamente removida da fila.
 
-## Dois tipos de TTL
+---
 
-### TTL por Mensagem (individual)
+## Dois Tipos de TTL
+
+### TTL por Mensagem (Individual)
 
 Define o tempo de vida no momento em que a mensagem é publicada.
 
@@ -20,11 +24,12 @@ await channel.BasicPublishAsync(
 );
 ```
 
+#### Características
+
 - A propriedade `Expiration` é definida em **milissegundos**.
-    
 - Esse TTL é aplicado **somente à mensagem enviada**, não afeta as demais.
 
-### TTL por Fila (padrão para todas as mensagens)
+### TTL por Fila (Padrão para Todas as Mensagens)
 
 Define um TTL padrão para todas as mensagens na fila.
 
@@ -41,8 +46,9 @@ await channel.QueueDeclareAsync(
 );
 ```
 
+#### Características
+
 - O argumento `x-message-ttl` é configurado na criação da fila.
-    
 - Todas as mensagens publicadas nesta fila terão o mesmo TTL, a menos que um TTL individual seja fornecido na mensagem.
 
 ---
@@ -52,25 +58,18 @@ await channel.QueueDeclareAsync(
 TTL é útil quando:
 
 - Você deseja garantir que mensagens antigas não sejam processadas.
-    
 - Você precisa evitar reprocessamento desnecessário.
-    
 - Mensagens antigas perdem o valor, como:
-    
-    - Atualizações de GPS.
-        
-    - Notificações de tempo real.
-        
-    - Solicitações de expiração (como tokens temporários).
+  - Atualizações de GPS.
+  - Notificações de tempo real.
+  - Solicitações de expiração (como tokens temporários).
 
 ---
 
-## Funcionamento prático
+## Funcionamento Prático
 
 - Se nenhuma **consumidor** processar a mensagem dentro do TTL, ela **desaparece** da fila.
-    
 - Isso evita loops desnecessários e uso indevido de recursos.
-    
 - Ao configurar TTL por fila, o RabbitMQ **não mostra a propriedade de expiração na mensagem** — o valor está atrelado à configuração da fila.
 
 ---
@@ -78,7 +77,5 @@ TTL é útil quando:
 ## Considerações
 
 - TTL de mensagem **tem prioridade** sobre TTL da fila.
-    
 - A configuração de TTL em milissegundos deve ser precisa, respeitando o intervalo necessário para a lógica de negócio.
-    
 - TTL não garante ordenação nem confirmação de entrega — é uma estratégia de expiração passiva.

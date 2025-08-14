@@ -1,11 +1,11 @@
-# Visão Geral
+# RabbitMQ com ASP.NET Core e Worker
+
+## Visão Geral
 
 Neste cenário, vamos:
 
 1. **Executar o RabbitMQ em um contêiner Docker**
-    
 2. **Criar uma API ASP.NET Core** que publica mensagens em uma fila RabbitMQ
-    
 3. **Criar um aplicativo console** (Worker) que consome essas mensagens e as processa
 
 Para tornarmos o sistema mais robusto, abordaremos **conceitos de durabilidade** (para que as mensagens não sejam perdidas caso o broker reinicie) e **configuração de prefetch** (_fair dispatch_, para distribuir tarefas de forma mais equilibrada entre múltiplos consumidores).
@@ -21,13 +21,11 @@ docker run -d --hostname my-rabbit --name rabbitmq-container -p 5672:5672 -p 156
 ```
 
 - **5672**: Porta padrão para conexões do protocolo AMQP (utilizada pelas aplicações).
-    
 - **15672**: Porta para acesso ao **Management Plugin** (interface web do RabbitMQ).
 
 Após executar o comando:
 
 - Acesse `http://localhost:15672` no navegador.
-    
 - Faça login com `guest / guest` (credenciais padrão, caso não tenha alterado).
 
 ---
@@ -37,7 +35,6 @@ Após executar o comando:
 ### Estrutura do Projeto
 
 - Trata-se de uma Web API ASP.NET Core contendo um **Controller** (`OrderController`).
-    
 - Ela recebe objetos do tipo `Order` via **POST**, converte em JSON e envia à fila RabbitMQ.
 
 ### Exemplo de Código
@@ -107,19 +104,16 @@ public class OrderController : ControllerBase
 #### Pontos de Observação
 
 - **Fila durável** (`durable: true`): assim, se o RabbitMQ for reiniciado, a definição da fila permanece.
-    
 - **Mensagens persistentes** (`properties.Persistent = true`): reduz a chance de perda de mensagens em caso de crash do RabbitMQ (não é uma garantia 100%, mas na maioria dos casos é suficiente).
-    
 - **`return Accepted`**: status `202` indicando que o pedido foi aceito; o processamento efetivo será feito pelo Worker.
 
 ---
 
 ## Criando o Worker (Consumidor de Mensagens)
 
-###  Estrutura do Projeto
+### Estrutura do Projeto
 
 - Um projeto **Console** que se conecta ao RabbitMQ, escuta a fila `orderQueue` e processa cada mensagem.
-
 - Ao final do processamento, envia um _ack_ confirmando que a mensagem foi processada com sucesso.
 
 ### Exemplo de Código
@@ -203,13 +197,9 @@ public class Program
 #### Pontos de Observação
 
 1. **Fila Durável**: mesmo se o broker reiniciar, a definição da fila permanece.
-    
 2. **autoAck = false**: A confirmação da mensagem (ACK) é manual, garantindo que a mensagem seja removida da fila apenas depois de processada.
-    
 3. **PrefetchCount = 1** (Fair Dispatch): Impede que o RabbitMQ envie várias mensagens de uma vez a um mesmo consumidor; assim, cada Worker só recebe a próxima mensagem depois de concluir (e dar ACK) na anterior.
-    
 4. **BasicAckAsync**: ACK final para liberar a mensagem, que então é removida da fila.
-    
 5. **BasicNackAsync**: Se houver falha, podemos devolver a mensagem para reprocessamento (ou descartar, dependendo da estratégia).
 
 ---
@@ -217,9 +207,7 @@ public class Program
 ## Testando o Fluxo
 
 1. **Inicie o contêiner** com o RabbitMQ (caso ainda não esteja em execução).
-    
 2. **Rode o Worker** (Aplicação Console). Ele ficará aguardando as mensagens.
-    
 3. **Execute a API** e faça uma requisição **POST** no endpoint configurado, por exemplo:
 
     ```plaintext
@@ -244,9 +232,7 @@ Se você iniciar **múltiplos** Workers, poderá observar como o RabbitMQ distri
 Com poucos ajustes, é possível:
 
 - **Tornar filas e mensagens duráveis**, garantindo maior resiliência contra reinícios ou falhas do RabbitMQ.
-    
 - **Configurar prefetch** para implementar o _fair dispatch_, evitando que um único Worker receba uma carga desproporcional de mensagens.
-    
 - Manter a **arquitetura desacoplada**, publicando na API e consumindo no Worker, com confirmação e reenvio em caso de falhas.
 
 Use este exemplo como ponto de partida para configurações avançadas (_exchanges_ personalizadas, _bindings_, _dead-letter queues_, _publisher confirms_, etc.) e crie sistemas altamente escaláveis e tolerantes a falhas.
